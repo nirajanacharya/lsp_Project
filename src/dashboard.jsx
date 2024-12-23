@@ -977,7 +977,7 @@ const FellowBoard = () => {
                         <button
                             onClick={() => {
                                 localStorage.removeItem("userCredentials");
-                                window.location.href = "/auth";
+                                window.location.href = "/";
                             }}
                             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                         >
