@@ -12,7 +12,7 @@ const Routing = () => {
         {/* Default route */}
         <Route
           path="/"
-          element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />}
+          element={<AuthPages />}
         />
 
         {/* Auth Pages (Login/Register) */}
