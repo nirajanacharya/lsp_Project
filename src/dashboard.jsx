@@ -20,24 +20,33 @@ const SessionsTab = () => {
             title: "JavaScript Fundamentals",
             date: "2024-12-24",
             time: "10:00 AM",
-            mentor: "Dr. Smith",
+            mentor: "Sagar Niroula",
             status: "upcoming",
+            description: "An in-depth session on JavaScript basics and fundamentals.",
+            duration: "2 hours",
+            link: "https://example.com/js-fundamentals",
         },
         {
             id: 2,
             title: "React Best Practices",
             date: "2024-12-26",
             time: "2:00 PM",
-            mentor: "Prof. Johnson",
+            mentor: "Rakesh Pandey",
             status: "upcoming",
+            description: "Learn the best practices for building React applications.",
+            duration: "1.5 hours",
+            link: "https://example.com/react-best-practices",
         },
         {
             id: 3,
             title: "Database Design",
             date: "2024-12-22",
             time: "11:00 AM",
-            mentor: "Dr. Wilson",
+            mentor: "Nirajan Acharya",
             status: "completed",
+            description: "A comprehensive guide to designing efficient databases.",
+            duration: "2 hours",
+            link: "https://example.com/database-design",
         },
     ]);
 
@@ -46,9 +55,13 @@ const SessionsTab = () => {
         date: "",
         time: "",
         mentor: "",
+        description: "",
+        duration: "",
+        link: "",
     });
 
     const [showAddForm, setShowAddForm] = useState(false);
+    const [selectedSession, setSelectedSession] = useState(null);
 
     const handleAddSession = (e) => {
         e.preventDefault();
@@ -60,7 +73,7 @@ const SessionsTab = () => {
                 status: "upcoming",
             },
         ]);
-        setNewSession({ title: "", date: "", time: "", mentor: "" });
+        setNewSession({ title: "", date: "", time: "", mentor: "", description: "", duration: "", link: "" });
         setShowAddForm(false);
     };
 
@@ -131,6 +144,41 @@ const SessionsTab = () => {
                             className="w-full p-2 border rounded"
                         />
                     </div>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">Description</label>
+                        <textarea
+                            required
+                            value={newSession.description}
+                            onChange={(e) =>
+                                setNewSession({ ...newSession, description: e.target.value })
+                            }
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">Duration</label>
+                        <input
+                            type="text"
+                            required
+                            value={newSession.duration}
+                            onChange={(e) =>
+                                setNewSession({ ...newSession, duration: e.target.value })
+                            }
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">Meeting Link</label>
+                        <input
+                            type="url"
+                            required
+                            value={newSession.link}
+                            onChange={(e) =>
+                                setNewSession({ ...newSession, link: e.target.value })
+                            }
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
                     <div className="flex justify-end space-x-3">
                         <button
                             type="button"
@@ -149,32 +197,72 @@ const SessionsTab = () => {
                 </form>
             )}
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="divide-y">
-                    {sessions.map((session) => (
-                        <div key={session.id} className="p-4 hover:bg-gray-50">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-medium">{session.title}</h3>
-                                    <p className="text-sm text-gray-500">with {session.mentor}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-600">{session.date}</p>
-                                    <p className="text-sm text-gray-600">{session.time}</p>
-                                    <span
-                                        className={`text-xs px-2 py-1 rounded-full ${session.status === "upcoming"
+            {selectedSession ? (
+                <div className="bg-white p-6 rounded-lg shadow space-y-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="font-medium text-lg">{selectedSession.title}</h3>
+                            <p className="text-sm text-gray-500">with {selectedSession.mentor}</p>
+                            <p className="text-sm text-gray-500">Duration: {selectedSession.duration}</p>
+                        </div>
+                        <button
+                            onClick={() => setSelectedSession(null)}
+                            className="text-blue-600 hover:text-blue-800"
+                        >
+                            Back to Sessions
+                        </button>
+                    </div>
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-700">{selectedSession.description}</p>
+                        {selectedSession.status === "upcoming" && (
+                            <a
+                                href={selectedSession.link}
+                                className="text-blue-600 hover:text-blue-800 text-sm inline-block bg-blue-100 px-4 py-2 rounded-md"
+                            >
+                                Join Session
+                            </a>
+                        )}
+                        {selectedSession.status === "completed" && (
+                            <div className="mt-4">
+                                <h4 className="font-semibold text-gray-700">Feedback</h4>
+                                <p className="text-gray-600">Please scan the QR code below to provide your feedback.</p>
+                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Feedback for ${selectedSession.title}`} alt="Feedback QR Code" className="mt-2" />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="divide-y">
+                        {sessions.map((session) => (
+                            <div
+                                key={session.id}
+                                className="p-4 hover:bg-gray-50 cursor-pointer"
+                                onClick={() => setSelectedSession(session)}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h3 className="font-medium">{session.title}</h3>
+                                        <p className="text-sm text-gray-500">with {session.mentor}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-600">{session.date}</p>
+                                        <p className="text-sm text-gray-600">{session.time}</p>
+                                        <span
+                                            className={`text-xs px-2 py-1 rounded-full ${session.status === "upcoming"
                                                 ? "bg-blue-100 text-blue-800"
                                                 : "bg-green-100 text-green-800"
-                                            }`}
-                                    >
-                                        {session.status}
-                                    </span>
+                                                }`}
+                                        >
+                                            {session.status}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
@@ -203,6 +291,27 @@ const ResourcesTab = () => {
             link: "#",
             date: "2024-12-18",
         },
+        {
+            id: 4,
+            title: "JavaScript Essentials",
+            type: "PDF",
+            link: "#",
+            date: "2024-12-17",
+        },
+        {
+            id: 5,
+            title: "React Hooks Explained",
+            type: "Video",
+            link: "#",
+            date: "2024-12-16",
+        },
+        {
+            id: 6,
+            title: "Node.js Best Practices",
+            type: "Document",
+            link: "#",
+            date: "2024-12-15",
+        },
     ]);
 
     const [showUploadForm, setShowUploadForm] = useState(false);
@@ -211,6 +320,8 @@ const ResourcesTab = () => {
         type: "PDF",
         link: "",
     });
+
+    const [selectedResource, setSelectedResource] = useState(null);
 
     const handleAddResource = (e) => {
         e.preventDefault();
@@ -300,59 +411,103 @@ const ResourcesTab = () => {
                 </form>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {resources.map((resource) => (
-                    <div
-                        key={resource.id}
-                        className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h3 className="font-medium">{resource.title}</h3>
-                                <p className="text-sm text-gray-500">{resource.date}</p>
-                            </div>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-sm">
-                                {resource.type}
-                            </span>
+            {selectedResource ? (
+                <div className="bg-white p-6 rounded-lg shadow space-y-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="font-medium text-lg">{selectedResource.title}</h3>
+                            <p className="text-sm text-gray-500">{selectedResource.date}</p>
                         </div>
-                        <a
-                            href={resource.link}
-                            className="mt-3 text-blue-600 hover:text-blue-800 text-sm inline-block"
+                        <button
+                            onClick={() => setSelectedResource(null)}
+                            className="text-blue-600 hover:text-blue-800"
                         >
-                            View Resource →
-                        </a>
+                            Back to Resources
+                        </button>
                     </div>
-                ))}
-            </div>
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-700">Type: {selectedResource.type}</p>
+                        <a
+                            href={selectedResource.link}
+                            className="text-blue-600 hover:text-blue-800 text-sm inline-block"
+                        >
+                            View Resource
+                        </a>
+                        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                            <h4 className="font-semibold text-gray-700">Resource Details</h4>
+                            <p className="text-gray-600">This resource is a comprehensive guide on {selectedResource.title}. It covers all the essential topics and provides valuable insights.</p>
+                        </div>
+                        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                            <h4 className="font-semibold text-gray-700">Related Resources</h4>
+                            <ul className="list-disc list-inside text-gray-600">
+                                <li><a href="#" className="text-blue-600 hover:text-blue-800">Advanced {selectedResource.type} Techniques</a></li>
+                                <li><a href="#" className="text-blue-600 hover:text-blue-800">Understanding {selectedResource.type} Formats</a></li>
+                                <li><a href="#" className="text-blue-600 hover:text-blue-800">Best Practices for {selectedResource.type}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {resources.map((resource) => (
+                        <div
+                            key={resource.id}
+                            className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <h3 className="font-medium">{resource.title}</h3>
+                                    <p className="text-sm text-gray-500">{resource.date}</p>
+                                </div>
+                                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-sm">
+                                    {resource.type}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setSelectedResource(resource)}
+                                className="mt-3 text-blue-600 hover:text-blue-800 text-sm inline-block"
+                            >
+                                View Resource →
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
 
 // Mentors Tab Content
 
-
 const MentorsTab = () => {
     const [mentors, setMentors] = useState([
         {
             id: 1,
-            name: "Dr. Smith",
+            name: "Sandeep",
             expertise: "Frontend Development",
             availability: "Available",
             rating: 4.8,
         },
         {
             id: 2,
-            name: "Prof. Johnson",
-            expertise: "Backend Development",
+            name: "Nirajan",
+            expertise: "AI Development",
             availability: "Busy",
             rating: 4.9,
         },
         {
             id: 3,
-            name: "Dr. Wilson",
+            name: "Sparsha",
             expertise: "Database Design",
             availability: "Available",
             rating: 4.7,
+        },
+        {
+            id: 4,
+            name: "Prason",
+            expertise: "DevOps",
+            availability: "Available",
+            rating: 4.6,
         },
     ]);
 
@@ -494,20 +649,20 @@ const DiscussionsTab = () => {
             {
                 id: 1,
                 title: "Best practices for React hooks?",
-                author: "John Doe",
+                author: "Sita Panthi",
                 replies: [
-                    { id: 1, author: "Jane Smith", content: "Use useEffect for side effects." },
-                    { id: 2, author: "John Doe", content: "Don't forget to clean up." },
+                    { id: 1, author: "Hari Upadhya", content: "Use useEffect for side effects." },
+                    { id: 2, author: "Nerisma Acharya", content: "Don't forget to clean up." },
                 ],
                 date: "2024-12-20",
             },
             {
                 id: 2,
                 title: "Database optimization techniques",
-                author: "Jane Smith",
+                author: "Hari Upadhya",
                 replies: [
-                    { id: 1, author: "John Doe", content: "Index your columns." },
-                    { id: 2, author: "Jane Smith", content: "Use query caching." },
+                    { id: 1, author: "Sita Panthi", content: "Index your columns." },
+                    { id: 2, author: "Nerisma Acharya", content: "Use query caching." },
                 ],
                 date: "2024-12-19",
             },
@@ -561,7 +716,17 @@ const DiscussionsTab = () => {
         setDiscussions(updatedDiscussions);
         localStorage.setItem("discussions", JSON.stringify(updatedDiscussions));
         setNewReply("");
-        setSelectedDiscussion(updatedDiscussions.find(discussion => discussion.id === selectedDiscussion.id));
+        setSelectedDiscussion({
+            ...selectedDiscussion,
+            replies: [
+                ...selectedDiscussion.replies,
+                {
+                    id: selectedDiscussion.replies.length + 1,
+                    author: JSON.parse(localStorage.getItem("userCredentials")).email,
+                    content: newReply,
+                },
+            ],
+        });
     };
 
     return (
