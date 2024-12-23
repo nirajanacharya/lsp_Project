@@ -329,7 +329,7 @@ const ResourcesTab = () => {
             id: 1,
             title: "Web Development Guide",
             type: "PDF",
-            link: "#",
+            link: "",
             date: "2024-12-20",
         },
         {
@@ -695,232 +695,6 @@ const MentorsTab = () => {
 
 
 
-
-// Discussions Tab Content
-const DiscussionsTab = () => {
-    const [discussions, setDiscussions] = useState(() => {
-        const savedDiscussions = localStorage.getItem("discussions");
-        return savedDiscussions ? JSON.parse(savedDiscussions) : [
-            {
-                id: 1,
-                title: "Best practices for React hooks?",
-                author: "Sita Panthi",
-                replies: [
-                    { id: 1, author: "Hari Upadhya", content: "Use useEffect for side effects." },
-                    { id: 2, author: "Nerisma Acharya", content: "Don't forget to clean up." },
-                ],
-                date: "2024-12-20",
-            },
-            {
-                id: 2,
-                title: "Database optimization techniques",
-                author: "Hari Upadhya",
-                replies: [
-                    { id: 1, author: "Sita Panthi", content: "Index your columns." },
-                    { id: 2, author: "Nerisma Acharya", content: "Use query caching." },
-                ],
-                date: "2024-12-19",
-            },
-        ];
-    });
-
-    const [newDiscussion, setNewDiscussion] = useState({
-        title: "",
-        content: "",
-    });
-
-    const [showNewDiscussion, setShowNewDiscussion] = useState(false);
-    const [selectedDiscussion, setSelectedDiscussion] = useState(null);
-    const [newReply, setNewReply] = useState("");
-
-    const handleAddDiscussion = (e) => {
-        e.preventDefault();
-        const updatedDiscussions = [
-            ...discussions,
-            {
-                id: discussions.length + 1,
-                ...newDiscussion,
-                author: JSON.parse(localStorage.getItem("userCredentials")).email,
-                replies: [],
-                date: new Date().toISOString().split("T")[0],
-            },
-        ];
-        setDiscussions(updatedDiscussions);
-        localStorage.setItem("discussions", JSON.stringify(updatedDiscussions));
-        setNewDiscussion({ title: "", content: "" });
-        setShowNewDiscussion(false);
-    };
-
-    const handleAddReply = (e) => {
-        e.preventDefault();
-        const updatedDiscussions = discussions.map((discussion) =>
-            discussion.id === selectedDiscussion.id
-                ? {
-                      ...discussion,
-                      replies: [
-                          ...discussion.replies,
-                          {
-                              id: discussion.replies.length + 1,
-                              author: JSON.parse(localStorage.getItem("userCredentials")).email,
-                              content: newReply,
-                          },
-                      ],
-                  }
-                : discussion
-        );
-        setDiscussions(updatedDiscussions);
-        localStorage.setItem("discussions", JSON.stringify(updatedDiscussions));
-        setNewReply("");
-        setSelectedDiscussion({
-            ...selectedDiscussion,
-            replies: [
-                ...selectedDiscussion.replies,
-                {
-                    id: selectedDiscussion.replies.length + 1,
-                    author: JSON.parse(localStorage.getItem("userCredentials")).email,
-                    content: newReply,
-                },
-            ],
-        });
-    };
-
-    return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Discussions</h2>
-                <button
-                    onClick={() => setShowNewDiscussion(!showNewDiscussion)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                    New Discussion
-                </button>
-            </div>
-
-            {showNewDiscussion && (
-                <form
-                    onSubmit={handleAddDiscussion}
-                    className="bg-white p-6 rounded-lg shadow space-y-4"
-                >
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium">Title</label>
-                        <input
-                            type="text"
-                            required
-                            value={newDiscussion.title}
-                            onChange={(e) =>
-                                setNewDiscussion({ ...newDiscussion, title: e.target.value })
-                            }
-                            className="w-full p-2 border rounded"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium">Content</label>
-                        <textarea
-                            required
-                            rows="4"
-                            value={newDiscussion.content}
-                            onChange={(e) =>
-                                setNewDiscussion({ ...newDiscussion, content: e.target.value })
-                            }
-                            className="w-full p-2 border rounded"
-                        />
-                    </div>
-                    <div className="flex justify-end space-x-3">
-                        <button
-                            type="button"
-                            onClick={() => setShowNewDiscussion(false)}
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                            Post Discussion
-                        </button>
-                    </div>
-                </form>
-            )}
-
-            {selectedDiscussion ? (
-                <div className="bg-white p-6 rounded-lg shadow space-y-4">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h3 className="font-medium text-lg">{selectedDiscussion.title}</h3>
-                            <p className="text-sm text-gray-500">
-                                Posted by {selectedDiscussion.author} on {selectedDiscussion.date}
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setSelectedDiscussion(null)}
-                            className="text-blue-600 hover:text-blue-800"
-                        >
-                            Back to Discussions
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {selectedDiscussion.replies.map((reply) => (
-                            <div key={reply.id} className="bg-gray-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-700">{reply.content}</p>
-                                <p className="text-xs text-gray-500">- {reply.author}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <form onSubmit={handleAddReply} className="space-y-4">
-                        <textarea
-                            required
-                            rows="3"
-                            value={newReply}
-                            onChange={(e) => setNewReply(e.target.value)}
-                            className="w-full p-2 border rounded"
-                            placeholder="Write your reply..."
-                        />
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                            >
-                                Post Reply
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {discussions.map((discussion) => (
-                        <div
-                            key={discussion.id}
-                            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
-                        >
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-medium text-lg">{discussion.title}</h3>
-                                    <p className="text-sm text-gray-500">
-                                        Posted by {discussion.author} on {discussion.date}
-                                    </p>
-                                </div>
-                                <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                                    {discussion.replies.length} replies
-                                </span>
-                            </div>
-                            <div className="mt-4 flex justify-between items-center">
-                                <button
-                                    onClick={() => setSelectedDiscussion(discussion)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    View Discussion →
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
-
 // Dashboard Tab Content
 const DashboardTab = () => {
     const stats = [
@@ -937,10 +711,29 @@ const DashboardTab = () => {
     ]);
 
     const [showNotifications, setShowNotifications] = useState(false);
+    const [todos, setTodos] = useState([]);
+    const [newTodo, setNewTodo] = useState({ text: "", date: "", time: "" });
+
+    const handleAddTodo = (e) => {
+        e.preventDefault();
+        setTodos([...todos, { id: todos.length + 1, ...newTodo, completed: false }]);
+        setNewTodo({ text: "", date: "", time: "" });
+    };
+
+    const handleDeleteTodo = (id) => {
+        setTodos(todos.filter((todo) => todo.id !== id));
+    };
+
+    const handleToggleComplete = (id) => {
+        setTodos(
+            todos.map((todo) =>
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            )
+        );
+    };
 
     return (
         <div className="space-y-6">
-            {/* Welcome Card */}
             <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold mb-2">Welcome!</h2>
                 <p className="text-gray-600">
@@ -948,7 +741,27 @@ const DashboardTab = () => {
                 </p>
             </div>
 
-            {/* Stats Grid */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">Program's Journey</h3>
+                <div className="relative pt-1">
+                    <div className="flex mb-2 items-center justify-between">
+                        <div>
+                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                My journey progress
+                            </span>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-xs font-semibold inline-block text-blue-600">
+                                90%
+                            </span>
+                        </div>
+                    </div>
+                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                        <div style={{ width: "90%" }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600"></div>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((item, index) => (
                     <div key={index} className="bg-white rounded-lg shadow p-4 flex items-center space-x-4">
@@ -956,6 +769,87 @@ const DashboardTab = () => {
                         <h3 className="text-gray-500 text-sm">{item.label}</h3>
                     </div>
                 ))}
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">To-Do List</h3>
+                <form onSubmit={handleAddTodo} className="space-y-4">
+                    <div className="flex space-x-3">
+                        <input
+                            type="text"
+                            value={newTodo.text}
+                            onChange={(e) => setNewTodo({ ...newTodo, text: e.target.value })}
+                            className="flex-1 p-2 border rounded"
+                            placeholder="Add a new task"
+                            required
+                        />
+                        <input
+                            type="date"
+                            value={newTodo.date}
+                            onChange={(e) => setNewTodo({ ...newTodo, date: e.target.value })}
+                            className="p-2 border rounded"
+                            required
+                        />
+                        <input
+                            type="time"
+                            value={newTodo.time}
+                            onChange={(e) => setNewTodo({ ...newTodo, time: e.target.value })}
+                            className="p-2 border rounded"
+                            required
+                        />
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Add
+                        </button>
+                    </div>
+                </form>
+                <ul className="space-y-2 mt-4">
+                    {todos.map((todo) => (
+                        <li
+                            key={todo.id}
+                            className={`p-4 border rounded shadow-md flex justify-between items-center ${todo.completed ? "bg-green-100" : "bg-blue-100"
+                                }`}
+                        >
+                            <div>
+                                <span className={todo.completed ? "line-through" : ""}>
+                                    {todo.text}
+                                </span>
+                                <div className="text-sm text-gray-500">
+                                    {todo.date} at {todo.time}
+                                </div>
+                            </div>
+                            <div className="space-x-3">
+                                <button
+                                    onClick={() => handleToggleComplete(todo.id)}
+                                    className={`px-4 py-2 rounded ${todo.completed ? "bg-yellow-500 text-white" : "bg-green-500 text-white"
+                                        }`}
+                                >
+                                    {todo.completed ? "Undo" : "Complete"}
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteTodo(todo.id)}
+                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* Calendar */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">Calendar</h3>
+                <div className="overflow-hidden">
+                    <iframe
+                        src="https://calendar.google.com/calendar/embed?src=en.np%23holiday%40group.v.calendar.google.com&ctz=Asia%2FKathmandu"
+                        style={{ border: 0 }}
+                        width="100%"
+                        height="600"
+                        frameBorder="0"
+                        scrolling="no"
+                    ></iframe>
+                </div>
             </div>
 
             {/* Notifications */}
@@ -999,56 +893,8 @@ const DashboardTab = () => {
         </div>
     );
 };
-// New Dashboard Tab Content
-const NewDashboardTab = () => {
-    const stats = [
-        { label: "Total Users", value: 1200 },
-        { label: "Active Users", value: 850 },
-        { label: "New Signups", value: 50 },
-        { label: "Total Revenue", value: "$12,000" },
-    ];
 
-    const activities = [
-        { id: 1, description: "User John Doe signed up", time: "2 hours ago" },
-        { id: 2, description: "New session on React added", time: "5 hours ago" },
-        { id: 3, description: "Resource 'Web Dev Guide' uploaded", time: "1 day ago" },
-    ];
 
-    return (
-        <div className="space-y-6">
-            {/* Welcome Card */}
-            <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-2">Welcome to the Dashboard!</h2>
-                <p className="text-gray-600">
-                    Here you can find an overview of your platform's performance and recent activities.
-                </p>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((item, index) => (
-                    <div key={index} className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                        <h3 className="text-2xl font-bold">{item.value}</h3>
-                        <p className="text-gray-500 text-sm">{item.label}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Recent Activities */}
-            <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Activities</h3>
-                <ul className="space-y-4">
-                    {activities.map((activity) => (
-                        <li key={activity.id} className="flex justify-between items-center">
-                            <p className="text-gray-700">{activity.description}</p>
-                            <span className="text-sm text-gray-500">{activity.time}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </div>
-    );
-};
 // Main FellowBoard Component
 const FellowBoard = () => {
     const [currentTab, setCurrentTab] = useState("dashboard");
