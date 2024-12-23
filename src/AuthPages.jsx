@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import FellowBoard from './dashboard';
 
 const AuthPages = () => {
-
-    
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState(null);
     const [showRegister, setShowRegister] = useState(false);
 
     const handleLogin = (credentials) => {
@@ -16,6 +15,7 @@ const AuthPages = () => {
                 credentials.password === savedCredentials.password
             ) {
                 setIsLoggedIn(true);
+                setUserRole(savedCredentials.role);
             } else {
                 alert('Invalid credentials! Use the correct email and password.');
             }
@@ -25,7 +25,6 @@ const AuthPages = () => {
     };
 
     const handleRegister = (userData) => {
-        // Mock registration: Saving to localStorage
         if (userData.password !== userData.confirmPassword) {
             alert('Passwords do not match!');
             return;
@@ -33,7 +32,8 @@ const AuthPages = () => {
 
         localStorage.setItem('userCredentials', JSON.stringify({
             email: userData.email,
-            password: userData.password
+            password: userData.password,
+            role: userData.role
         }));
 
         setShowRegister(false);
@@ -41,7 +41,7 @@ const AuthPages = () => {
     };
 
     if (isLoggedIn) {
-        return <FellowBoard />;
+        return <FellowBoard role={userRole} />;
     }
 
     return (
@@ -74,16 +74,13 @@ const LoginForm = ({ onLogin, onSwitch }) => {
         onLogin(credentials);
     };
 
-
-
     return (
         <>
-        
             <div className="text-center">
-                <h2 className="text-3xl font-extrabold text-gray-900">
+                <h2 className="text-4xl font-extrabold text-gray-900">
                     Welcome to FellowBoard
                 </h2>
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-2 text-lg text-gray-600">
                     Or{' '}
                     <button
                         onClick={onSwitch}
@@ -104,7 +101,7 @@ const LoginForm = ({ onLogin, onSwitch }) => {
                             name="email"
                             type="email"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Email address"
                             value={credentials.email}
                             onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
@@ -119,7 +116,7 @@ const LoginForm = ({ onLogin, onSwitch }) => {
                             name="password"
                             type="password"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Password"
                             value={credentials.password}
                             onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
@@ -150,7 +147,7 @@ const LoginForm = ({ onLogin, onSwitch }) => {
                 <div>
                     <button
                         type="submit"
-                        className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-lg font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Sign in
                     </button>
@@ -165,7 +162,8 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
         name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        role: 'fellow' // default role
     });
 
     const handleSubmit = (e) => {
@@ -180,10 +178,10 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
     return (
         <>
             <div className="text-center">
-                <h2 className="text-3xl font-extrabold text-gray-900">
+                <h2 className="text-4xl font-extrabold text-gray-900">
                     Create your account
                 </h2>
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-2 text-lg text-gray-600">
                     Or{' '}
                     <button
                         onClick={onSwitch}
@@ -204,7 +202,7 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
                             name="name"
                             type="text"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Full Name"
                             value={userData.name}
                             onChange={(e) => setUserData({ ...userData, name: e.target.value })}
@@ -219,7 +217,7 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
                             name="email"
                             type="email"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Email address"
                             value={userData.email}
                             onChange={(e) => setUserData({ ...userData, email: e.target.value })}
@@ -234,7 +232,7 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
                             name="password"
                             type="password"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Password"
                             value={userData.password}
                             onChange={(e) => setUserData({ ...userData, password: e.target.value })}
@@ -249,18 +247,34 @@ const RegisterForm = ({ onRegister, onSwitch }) => {
                             name="confirmPassword"
                             type="password"
                             required
-                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
                             placeholder="Confirm Password"
                             value={userData.confirmPassword}
                             onChange={(e) => setUserData({ ...userData, confirmPassword: e.target.value })}
                         />
+                    </div>
+                    <div>
+                        <label htmlFor="role" className="sr-only">
+                            Role
+                        </label>
+                        <select
+                            id="role"
+                            name="role"
+                            required
+                            className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-lg"
+                            value={userData.role}
+                            onChange={(e) => setUserData({ ...userData, role: e.target.value })}
+                        >
+                            <option value="fellow">Fellow</option>
+                            <option value="admin">Admin</option>
+                        </select>
                     </div>
                 </div>
 
                 <div>
                     <button
                         type="submit"
-                        className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-lg font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Create Account
                     </button>
