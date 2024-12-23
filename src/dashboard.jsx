@@ -371,7 +371,7 @@ const MentorsTab = () => {
 
     const handleSubmitSession = (e) => {
         e.preventDefault();
-        // Add logic to submit the session
+        
         alert(`Session scheduled with ${selectedMentor.name}`);
         handleCloseModal();
     };
@@ -488,22 +488,31 @@ const MentorsTab = () => {
 
 // Discussions Tab Content
 const DiscussionsTab = () => {
-    const [discussions, setDiscussions] = useState([
-        {
-            id: 1,
-            title: "Best practices for React hooks?",
-            author: "John Doe",
-            replies: 5,
-            date: "2024-12-20",
-        },
-        {
-            id: 2,
-            title: "Database optimization techniques",
-            author: "Jane Smith",
-            replies: 3,
-            date: "2024-12-19",
-        },
-    ]);
+    const [discussions, setDiscussions] = useState(() => {
+        const savedDiscussions = localStorage.getItem("discussions");
+        return savedDiscussions ? JSON.parse(savedDiscussions) : [
+            {
+                id: 1,
+                title: "Best practices for React hooks?",
+                author: "John Doe",
+                replies: [
+                    { id: 1, author: "Jane Smith", content: "Use useEffect for side effects." },
+                    { id: 2, author: "John Doe", content: "Don't forget to clean up." },
+                ],
+                date: "2024-12-20",
+            },
+            {
+                id: 2,
+                title: "Database optimization techniques",
+                author: "Jane Smith",
+                replies: [
+                    { id: 1, author: "John Doe", content: "Index your columns." },
+                    { id: 2, author: "Jane Smith", content: "Use query caching." },
+                ],
+                date: "2024-12-19",
+            },
+        ];
+    });
 
     const [newDiscussion, setNewDiscussion] = useState({
         title: "",
@@ -511,21 +520,48 @@ const DiscussionsTab = () => {
     });
 
     const [showNewDiscussion, setShowNewDiscussion] = useState(false);
+    const [selectedDiscussion, setSelectedDiscussion] = useState(null);
+    const [newReply, setNewReply] = useState("");
 
     const handleAddDiscussion = (e) => {
         e.preventDefault();
-        setDiscussions([
+        const updatedDiscussions = [
             ...discussions,
             {
                 id: discussions.length + 1,
                 ...newDiscussion,
-                author: "You",
-                replies: 0,
+                author: JSON.parse(localStorage.getItem("userCredentials")).email,
+                replies: [],
                 date: new Date().toISOString().split("T")[0],
             },
-        ]);
+        ];
+        setDiscussions(updatedDiscussions);
+        localStorage.setItem("discussions", JSON.stringify(updatedDiscussions));
         setNewDiscussion({ title: "", content: "" });
         setShowNewDiscussion(false);
+    };
+
+    const handleAddReply = (e) => {
+        e.preventDefault();
+        const updatedDiscussions = discussions.map((discussion) =>
+            discussion.id === selectedDiscussion.id
+                ? {
+                      ...discussion,
+                      replies: [
+                          ...discussion.replies,
+                          {
+                              id: discussion.replies.length + 1,
+                              author: JSON.parse(localStorage.getItem("userCredentials")).email,
+                              content: newReply,
+                          },
+                      ],
+                  }
+                : discussion
+        );
+        setDiscussions(updatedDiscussions);
+        localStorage.setItem("discussions", JSON.stringify(updatedDiscussions));
+        setNewReply("");
+        setSelectedDiscussion(updatedDiscussions.find(discussion => discussion.id === selectedDiscussion.id));
     };
 
     return (
@@ -535,7 +571,6 @@ const DiscussionsTab = () => {
                 <button
                     onClick={() => setShowNewDiscussion(!showNewDiscussion)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                // Continuing from the DiscussionsTab component...
                 >
                     New Discussion
                 </button>
@@ -588,46 +623,92 @@ const DiscussionsTab = () => {
                 </form>
             )}
 
-            <div className="space-y-4">
-                {discussions.map((discussion) => (
-                    <div
-                        key={discussion.id}
-                        className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="font-medium text-lg">{discussion.title}</h3>
-                                <p className="text-sm text-gray-500">
-                                    Posted by {discussion.author} on {discussion.date}
-                                </p>
-                            </div>
-                            <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                                {discussion.replies} replies
-                            </span>
+            {selectedDiscussion ? (
+                <div className="bg-white p-6 rounded-lg shadow space-y-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="font-medium text-lg">{selectedDiscussion.title}</h3>
+                            <p className="text-sm text-gray-500">
+                                Posted by {selectedDiscussion.author} on {selectedDiscussion.date}
+                            </p>
                         </div>
-                        <div className="mt-4 flex justify-between items-center">
-                            <button className="text-blue-600 hover:text-blue-800">
-                                View Discussion →
-                            </button>
-                            <button className="text-gray-600 hover:text-gray-800">
-                                Reply
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setSelectedDiscussion(null)}
+                            className="text-blue-600 hover:text-blue-800"
+                        >
+                            Back to Discussions
+                        </button>
                     </div>
-                ))}
-            </div>
+                    <div className="space-y-4">
+                        {selectedDiscussion.replies.map((reply) => (
+                            <div key={reply.id} className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-700">{reply.content}</p>
+                                <p className="text-xs text-gray-500">- {reply.author}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <form onSubmit={handleAddReply} className="space-y-4">
+                        <textarea
+                            required
+                            rows="3"
+                            value={newReply}
+                            onChange={(e) => setNewReply(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            placeholder="Write your reply..."
+                        />
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                                Post Reply
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {discussions.map((discussion) => (
+                        <div
+                            key={discussion.id}
+                            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-medium text-lg">{discussion.title}</h3>
+                                    <p className="text-sm text-gray-500">
+                                        Posted by {discussion.author} on {discussion.date}
+                                    </p>
+                                </div>
+                                <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                                    {discussion.replies.length} replies
+                                </span>
+                            </div>
+                            <div className="mt-4 flex justify-between items-center">
+                                <button
+                                    onClick={() => setSelectedDiscussion(discussion)}
+                                    className="text-blue-600 hover:text-blue-800"
+                                >
+                                    View Discussion →
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
 
+
 // Dashboard Tab Content
 const DashboardTab = () => {
-    const stats = {
-        upcomingSessions: 3,
-        completedProjects: 12,
-        availableResources: 45,
-        activeDiscussions: 8,
-    };
+    const stats = [
+        { label: "Upcoming Sessions", icon: "📅" },
+        { label: "Completed Projects", icon: "✅" },
+        { label: "Available Resources", icon: "📚" },
+        { label: "Active Discussions", icon: "💬" },
+    ];
 
     const [notifications, setNotifications] = useState([
         { id: 1, text: "New session scheduled for tomorrow", type: "info" },
@@ -635,11 +716,13 @@ const DashboardTab = () => {
         { id: 3, text: "New resource available", type: "success" },
     ]);
 
+    const [showNotifications, setShowNotifications] = useState(false);
+
     return (
         <div className="space-y-6">
             {/* Welcome Card */}
             <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-2">Welcome !</h2>
+                <h2 className="text-xl font-semibold mb-2">Welcome!</h2>
                 <p className="text-gray-600">
                     Track your progress and upcoming activities here.
                 </p>
@@ -647,59 +730,115 @@ const DashboardTab = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-gray-500 text-sm">Upcoming Sessions</h3>
-                    <p className="text-2xl font-semibold">{stats.upcomingSessions}</p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-gray-500 text-sm">Completed Projects</h3>
-                    <p className="text-2xl font-semibold">{stats.completedProjects}</p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-gray-500 text-sm">Available Resources</h3>
-                    <p className="text-2xl font-semibold">{stats.availableResources}</p>
-                </div>
-                <div className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-gray-500 text-sm">Active Discussions</h3>
-                    <p className="text-2xl font-semibold">{stats.activeDiscussions}</p>
-                </div>
+                {stats.map((item, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow p-4 flex items-center space-x-4">
+                        <span className="text-3xl">{item.icon}</span>
+                        <h3 className="text-gray-500 text-sm">{item.label}</h3>
+                    </div>
+                ))}
             </div>
 
             {/* Notifications */}
             <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Notifications</h3>
-                <div className="space-y-4">
-                    {notifications.map((notification) => (
-                        <div
-                            key={notification.id}
-                            className={`p-4 rounded-lg ${notification.type === "warning"
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold mb-4">Recent Notifications</h3>
+                    <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        {showNotifications ? "Hide Notifications" : "Show Notifications"}
+                    </button>
+                </div>
+                {showNotifications && (
+                    <div className="space-y-4">
+                        {notifications.map((notification) => (
+                            <div
+                                key={notification.id}
+                                className={`p-4 rounded-lg ${notification.type === "warning"
                                     ? "bg-yellow-50 border-l-4 border-yellow-400"
                                     : notification.type === "success"
                                         ? "bg-green-50 border-l-4 border-green-400"
                                         : "bg-blue-50 border-l-4 border-blue-400"
-                                }`}
-                        >
-                            <p
-                                className={`text-sm ${notification.type === "warning"
+                                    }`}
+                            >
+                                <p
+                                    className={`text-sm ${notification.type === "warning"
                                         ? "text-yellow-800"
                                         : notification.type === "success"
                                             ? "text-green-800"
                                             : "text-blue-800"
-                                    }`}
-                            >
-                                {notification.text}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+                                        }`}
+                                >
+                                    {notification.text}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
 };
+// New Dashboard Tab Content
+const NewDashboardTab = () => {
+    const stats = [
+        { label: "Total Users", value: 1200 },
+        { label: "Active Users", value: 850 },
+        { label: "New Signups", value: 50 },
+        { label: "Total Revenue", value: "$12,000" },
+    ];
 
+    const activities = [
+        { id: 1, description: "User John Doe signed up", time: "2 hours ago" },
+        { id: 2, description: "New session on React added", time: "5 hours ago" },
+        { id: 3, description: "Resource 'Web Dev Guide' uploaded", time: "1 day ago" },
+    ];
+
+    return (
+        <div className="space-y-6">
+            {/* Welcome Card */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-2">Welcome to the Dashboard!</h2>
+                <p className="text-gray-600">
+                    Here you can find an overview of your platform's performance and recent activities.
+                </p>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {stats.map((item, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                        <h3 className="text-2xl font-bold">{item.value}</h3>
+                        <p className="text-gray-500 text-sm">{item.label}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Recent Activities */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">Recent Activities</h3>
+                <ul className="space-y-4">
+                    {activities.map((activity) => (
+                        <li key={activity.id} className="flex justify-between items-center">
+                            <p className="text-gray-700">{activity.description}</p>
+                            <span className="text-sm text-gray-500">{activity.time}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+};
 // Main FellowBoard Component
 const FellowBoard = () => {
     const [currentTab, setCurrentTab] = useState("dashboard");
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notificationCount, setNotificationCount] = useState(3);
+
+    const handleNotificationClick = () => {
+        setShowNotifications(!showNotifications);
+        setNotificationCount(0);
+    };
 
     const renderTabContent = () => {
         switch (currentTab) {
@@ -729,6 +868,7 @@ const FellowBoard = () => {
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                onClick={handleNotificationClick}
                             >
                                 <path
                                     strokeLinecap="round"
@@ -737,9 +877,18 @@ const FellowBoard = () => {
                                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                                 ></path>
                             </svg>
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                                3
-                            </span>
+                            {notificationCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                                    {notificationCount}
+                                </span>
+                            )}
+                            {showNotifications && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-2">
+                                    <p className="px-4 py-2 text-gray-700">New session scheduled for tomorrow</p>
+                                    <p className="px-4 py-2 text-gray-700">Project deadline approaching</p>
+                                    <p className="px-4 py-2 text-gray-700">New resource available</p>
+                                </div>
+                            )}
                         </div>
                         <div className="relative group">
                             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer">
