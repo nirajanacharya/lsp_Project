@@ -692,6 +692,175 @@ const MentorsTab = () => {
     );
 };
 
+// Discussions Tab Content
+const DiscussionsTab = () => {
+    const [discussions, setDiscussions] = useState([
+        { id: 1, title: 'Best practices for React hooks?', author: 'Aashra Pradhan', replies: 5, date: '2024-12-20', content: 'What are some best practices for using React hooks in a project?', repliesContent: [{ author: 'Sparsha Shrestha', content: 'Always use hooks at the top level of your component.' }, { author: 'Prason Pandey', content: 'Use custom hooks to extract and reuse logic.' }] },
+        { id: 2, title: 'Database optimization techniques', author: 'Nirajan Acharya', replies: 3, date: '2024-12-19', content: 'Can anyone share some techniques for optimizing database performance?', repliesContent: [{ author: 'Sparsha Shrestha', content: 'Index your columns properly.' }, { author: 'Prason Pandey', content: 'Use query optimization tools.' }] },
+        { id: 3, title: 'Major project ideas', author: 'Sandeep', replies: 2, date: '2024-12-18', content: 'What are some good major project ideas for final year?', repliesContent: [{ author: 'Sparsha Shrestha', content: 'Build a full-stack web application.' }, { author: 'Prason Pandey', content: 'Create a machine learning model.' }] },
+        { id: 4, title: 'Coding best practices', author: 'Nirajan Acharya', replies: 4, date: '2024-12-17', content: 'What are some coding best practices to follow?', repliesContent: [{ author: 'Sparsha Shrestha', content: 'Write clean and readable code.' }, { author: 'Prason Pandey', content: 'Follow SOLID principles.' }] },
+        { id: 5, title: 'Effective debugging techniques', author: 'Aashra Pradhan', replies: 3, date: '2024-12-16', content: 'What are some effective debugging techniques?', repliesContent: [{ author: 'Sparsha Shrestha', content: 'Use a debugger tool.' }, { author: 'Prason Pandey', content: 'Log important information.' }] }
+    ]);
+
+    const [newDiscussion, setNewDiscussion] = useState({
+        title: '',
+        content: ''
+    });
+
+    const [showNewDiscussion, setShowNewDiscussion] = useState(false);
+    const [selectedDiscussion, setSelectedDiscussion] = useState(null);
+    const [replyContent, setReplyContent] = useState('');
+
+    const handleAddDiscussion = (e) => {
+        e.preventDefault();
+        setDiscussions([...discussions, {
+            id: discussions.length + 1,
+            ...newDiscussion,
+            author: JSON.parse(localStorage.getItem("userCredentials")).email,
+            replies: 0,
+            date: new Date().toISOString().split('T')[0],
+            repliesContent: []
+        }]);
+        setNewDiscussion({ title: '', content: '' });
+        setShowNewDiscussion(false);
+    };
+
+    const handleAddReply = (discussionId) => {
+        const updatedDiscussions = discussions.map(discussion => 
+            discussion.id === discussionId 
+                ? { ...discussion, replies: discussion.replies + 1, repliesContent: [...discussion.repliesContent, { author: JSON.parse(localStorage.getItem("userCredentials")).email, content: replyContent }] } 
+                : discussion
+        );
+        setDiscussions(updatedDiscussions);
+        setSelectedDiscussion(updatedDiscussions.find(discussion => discussion.id === discussionId));
+        setReplyContent('');
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Discussions</h2>
+                <button
+                    onClick={() => setShowNewDiscussion(!showNewDiscussion)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                    New Discussion
+                </button>
+            </div>
+
+            {showNewDiscussion && (
+                <form onSubmit={handleAddDiscussion} className="bg-white p-6 rounded-lg shadow space-y-4">
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">Title</label>
+                        <input
+                            type="text"
+                            required
+                            value={newDiscussion.title}
+                            onChange={(e) => setNewDiscussion({ ...newDiscussion, title: e.target.value })}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">Content</label>
+                        <textarea
+                            required
+                            rows="4"
+                            value={newDiscussion.content}
+                            onChange={(e) => setNewDiscussion({ ...newDiscussion, content: e.target.value })}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onClick={() => setShowNewDiscussion(false)}
+                            className="px-4 py-2 border rounded hover:bg-gray-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                            Post Discussion
+                        </button>
+                    </div>
+                </form>
+            )}
+
+            {selectedDiscussion ? (
+                <div className="bg-white p-6 rounded-lg shadow space-y-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="font-medium text-lg">{selectedDiscussion.title}</h3>
+                            <p className="text-sm text-gray-500">Posted by {selectedDiscussion.author} on {selectedDiscussion.date}</p>
+                        </div>
+                        <button
+                            onClick={() => setSelectedDiscussion(null)}
+                            className="text-blue-600 hover:text-blue-800"
+                        >
+                            Back to Discussions
+                        </button>
+                    </div>
+                    <p className="text-gray-700">{selectedDiscussion.content}</p>
+                    <div className="space-y-4">
+                        {selectedDiscussion.repliesContent.map((reply, index) => (
+                            <div key={index} className="bg-gray-100 p-4 rounded-lg">
+                                <p className="text-sm text-gray-500">Reply by {reply.author}</p>
+                                <p className="text-gray-700">{reply.content}</p>
+                            </div>
+                        ))}
+                        <textarea
+                            rows="3"
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            placeholder="Write your reply..."
+                        />
+                        <button
+                            onClick={() => handleAddReply(selectedDiscussion.id)}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                        >
+                            Post Reply
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {discussions.map(discussion => (
+                        <div key={discussion.id} className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-medium text-lg">{discussion.title}</h3>
+                                    <p className="text-sm text-gray-500">Posted by {discussion.author} on {discussion.date}</p>
+                                </div>
+                                <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                                    {discussion.replies} replies
+                                </span>
+                            </div>
+                            <p className="mt-4 text-gray-700">{discussion.content}</p>
+                            <div className="mt-4 flex justify-between items-center">
+                                <button
+                                    onClick={() => setSelectedDiscussion(discussion)}
+                                    className="text-blue-600 hover:text-blue-800"
+                                >
+                                    View Discussion →
+                                </button>
+                                <button
+                                    onClick={() => setSelectedDiscussion(discussion)}
+                                    className="text-gray-600 hover:text-gray-800"
+                                >
+                                    Reply
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 
 
@@ -895,7 +1064,7 @@ const DashboardTab = () => {
 };
 
 
-// Main FellowBoard Component
+
 const FellowBoard = () => {
     const [currentTab, setCurrentTab] = useState("dashboard");
     const [showNotifications, setShowNotifications] = useState(false);
