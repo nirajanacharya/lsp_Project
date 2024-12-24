@@ -132,6 +132,8 @@ const SessionsTab = () => {
         setShowAddForm(false);
     };
 
+    const sortedSessions = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -289,7 +291,7 @@ const SessionsTab = () => {
             ) : (
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                     <div className="divide-y">
-                        {sessions.map((session) => (
+                        {sortedSessions.map((session) => (
                             <div
                                 key={session.id}
                                 className="p-4 hover:bg-gray-50 cursor-pointer"
